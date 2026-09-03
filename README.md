@@ -6,7 +6,7 @@ Convertí notas de voz en datos estructurados de compra. Grabá tu voz describie
 
 - [Node.js](https://nodejs.org/) >= 18
 - [npm](https://npmjs.com/) >= 9
-- Una [OpenAI API key](https://platform.openai.com/api-keys)
+- Una [Groq API key](https://console.groq.com/keys)
 
 ## Setup
 
@@ -27,7 +27,7 @@ cp .env.example server/.env
 Editá `server/.env`:
 
 ```
-OPENAI_API_KEY=sk-tu-api-key-aqui
+GROQ_API_KEY=gsk_tu-api-key-aqui
 PORT=3000
 ```
 
@@ -89,15 +89,20 @@ Content-Type: multipart/form-data
 
 ```json
 {
-  "transcription": "Compré 3 litros de leche por 250 pesos",
+  "transcription": "El 3 de septiembre compré veinte remeras negras...",
   "data": {
-    "tipo": "compra",
-    "proveedor": null,
-    "producto": "leche",
-    "cantidad": 3,
-    "precio_unitario": 250,
-    "fecha": "2025-01-15",
-    "metodo_pago": null
+    "fecha": "2026-09-03",
+    "proveedor": "Juan Pérez",
+    "productos": [
+      {
+        "producto": "Remera",
+        "cantidad": 20,
+        "color": "negro",
+        "talle": "M",
+        "precio_unitario": 8500
+      }
+    ],
+    "metodo_pago": "transferencia"
   }
 }
 ```
@@ -131,8 +136,8 @@ V.t.S.D-Venture/
 │       ├── routes/
 │       │   └── voiceRoutes.js       # POST /api/voice/process
 │       ├── services/
-│       │   ├── transcriptionService.js  # OpenAI Whisper
-│       │   └── aiService.js            # OpenAI GPT-4o-mini
+│       │   ├── transcriptionService.js  # Groq Whisper (whisper-large-v3-turbo)
+│       │   └── aiService.js            # Groq LLM (llama-3.3-70b-versatile)
 │       └── schemas/
 │           └── purchaseSchema.js    # Zod validation
 └── package.json             # Workspaces + concurrently
@@ -142,8 +147,8 @@ V.t.S.D-Venture/
 
 1. **Grabar**: El usuario presiona el botón y habla al micrófono (máx. 60s)
 2. **Subir**: El audio se envía al backend como `FormData`
-3. **Transcribir**: OpenAI Whisper convierte audio a texto
-4. **Extraer**: GPT-4o-mini analiza el texto y extrae campos de compra
+3. **Transcribir**: Groq Whisper (whisper-large-v3-turbo) convierte audio a texto
+4. **Extraer**: Llama 3.3 70B analiza el texto y extrae campos de compra con Structured Outputs
 5. **Validar**: Zod valida la estructura. Si falla, reintenta una vez
 6. **Mostrar**: El frontend muestra la transcripción y los datos estructurados
 
@@ -151,5 +156,5 @@ V.t.S.D-Venture/
 
 - **Frontend**: React 19, Vite 6
 - **Backend**: Express 5, Multer, Zod
-- **AI**: OpenAI API (Whisper + GPT-4o-mini)
+- **AI**: Groq API (Whisper + Llama 3.3 70B)
 - **Diseño**: Tema oscuro brutalista, fuentes monoespaciadas

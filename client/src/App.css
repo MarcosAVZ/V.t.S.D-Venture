@@ -257,6 +257,121 @@ h2 {
   50% { opacity: 0.5; transform: scale(0.8); }
 }
 
+/* Data Card */
+.data-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.data-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #222;
+}
+
+.data-label {
+  color: #888;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.data-value {
+  color: #e0e0e0;
+  font-weight: 600;
+}
+
+/* Products */
+.products-section {
+  margin-top: 0.5rem;
+}
+
+.products-section h3 {
+  font-size: 0.85rem;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.75rem;
+}
+
+.product-card {
+  background: #0a0a0a;
+  border: 1px solid #333;
+  padding: 0.75rem 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.product-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 0.5rem;
+}
+
+.product-name {
+  color: #fff;
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.product-qty {
+  color: #ffaa00;
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.product-details {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.85rem;
+  color: #aaa;
+  flex-wrap: wrap;
+}
+
+.product-price {
+  color: #44ff44;
+  font-weight: 700;
+}
+
+/* JSON Raw */
+.json-raw {
+  margin-top: 1rem;
+}
+
+.json-raw summary {
+  cursor: pointer;
+  color: #666;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.5rem 0;
+}
+
+.json-raw summary:hover {
+  color: #888;
+}
+
+.json-raw pre {
+  background: #0a0a0a;
+  border: 1px solid #333;
+  padding: 1rem;
+  overflow-x: auto;
+  font-family: inherit;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  color: #88ccff;
+  margin-top: 0.5rem;
+}
+
+.placeholder {
+  color: #666;
+  font-style: italic;
+  font-size: 0.9rem;
+}
+
 /* Responsive */
 @media (max-width: 480px) {
   .app {

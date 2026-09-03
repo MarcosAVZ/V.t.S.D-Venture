@@ -1,31 +1,30 @@
-import OpenAI from 'openai';
+import Groq from 'groq-sdk';
 import fs from 'fs';
 
-let openai = null;
+let groq = null;
 
 function getClient() {
-  if (!openai) {
-    openai = new OpenAI();
+  if (!groq) {
+    groq = new Groq();
   }
-  return openai;
+  return groq;
 }
 
 /**
- * Transcribes audio file using OpenAI Whisper.
+ * Transcribes audio file using Groq Whisper.
  * @param {string} filePath - Path to audio file
  * @returns {Promise<string>} Transcribed text
  * @throws {Error} If transcription fails
  */
 export async function transcribeAudio(filePath) {
   try {
-    const audioFile = fs.createReadStream(filePath);
-    const response = await getClient().audio.transcriptions.create({
-      model: 'whisper-1',
-      file: audioFile,
+    const transcription = await getClient().audio.transcriptions.create({
+      file: fs.createReadStream(filePath),
+      model: 'whisper-large-v3-turbo',
     });
-    return response.text;
+    return transcription.text;
   } catch (error) {
-    console.error('Whisper API error:', error.message);
+    console.error('Groq Whisper error:', error.message);
     throw new Error(`Transcription failed: ${error.message}`);
   }
 }
