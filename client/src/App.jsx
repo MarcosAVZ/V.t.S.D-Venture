@@ -38,8 +38,6 @@ function App() {
     setStatus('error')
   }, [])
 
-  const statusText = status === 'error' ? `Error: ${error}` : STATUS_TEXT[status]
-
   return (
     <div className="app">
       <header className="app-header">
@@ -50,9 +48,16 @@ function App() {
       <main className="app-main">
         <section className="status-section">
           <div className={`status-indicator status-${status}`}>
-            {statusText}
+            {STATUS_TEXT[status]}
           </div>
         </section>
+
+        {status === 'error' && error && (
+          <section className="error-banner">
+            <span className="error-icon">⚠</span>
+            <span className="error-message">{error}</span>
+          </section>
+        )}
 
         <section className="recorder-section">
           <Recorder

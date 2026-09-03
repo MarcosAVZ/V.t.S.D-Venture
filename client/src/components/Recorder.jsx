@@ -77,23 +77,38 @@ function Recorder({ onStatusChange, onResult, onError }) {
       const formData = new FormData()
       formData.append('audio', audioBlob, 'recording.webm')
 
+      // Start the fetch and simulate processing stages concurrently.
+      // The backend processes transcription → extraction → validation server-side
+      // in a single request, so we can't truly track each stage from the frontend.
+      // The simulated stages give the user visual feedback during the wait.
+      const stages = [
+        { status: 'transcribing', delay: 1200 },
+        { status: 'extracting', delay: 1200 },
+        { status: 'validating', delay: 800 },
+      ]
+
+      let cancelled = false
+      const runStages = async () => {
+        for (const stage of stages) {
+          await new Promise(resolve => setTimeout(resolve, stage.delay))
+          if (cancelled) return
+          onStatusChange(stage.status)
+        }
+      }
+
+      runStages()
+
       const response = await fetch('/api/voice/process', {
         method: 'POST',
         body: formData,
       })
 
+      cancelled = true
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
         throw new Error(errorData.error || `Error del servidor: ${response.status}`)
       }
-
-      // Simulate processing stages for better UX
-      onStatusChange('transcribing')
-      await new Promise(resolve => setTimeout(resolve, 800))
-      onStatusChange('extracting')
-      await new Promise(resolve => setTimeout(resolve, 800))
-      onStatusChange('validating')
-      await new Promise(resolve => setTimeout(resolve, 400))
 
       const result = await response.json()
       onResult(result)
