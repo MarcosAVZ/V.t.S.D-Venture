@@ -1,26 +1,243 @@
-body {
+/* V.t.S.D — Brutalist/Utilitarian Design */
+
+* {
+  box-sizing: border-box;
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background-color: #f5f5f5;
-  color: #333;
+  padding: 0;
+}
+
+body {
+  font-family: 'SF Mono', 'Fira Code', 'Fira Mono', 'Roboto Mono', monospace;
+  background-color: #0a0a0a;
+  color: #e0e0e0;
+  line-height: 1.5;
 }
 
 .app {
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-  padding: 2rem;
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+.app-header {
+  text-align: center;
+  margin-bottom: 3rem;
+  border-bottom: 2px solid #333;
+  padding-bottom: 1.5rem;
 }
 
 h1 {
-  margin: 0 0 0.5rem 0;
-  font-size: 2rem;
+  font-size: 2.5rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #ffffff;
+  margin-bottom: 0.5rem;
 }
 
 .subtitle {
-  margin: 0;
-  color: #666;
+  color: #888;
+  font-size: 0.9rem;
+  letter-spacing: 0.05em;
+}
+
+.app-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+/* Status Section */
+.status-section {
+  text-align: center;
+}
+
+.status-indicator {
   font-size: 1.1rem;
+  font-weight: 600;
+  padding: 0.75rem 1.5rem;
+  border: 2px solid #333;
+  background: #111;
+  display: inline-block;
+  letter-spacing: 0.05em;
+}
+
+.status-idle {
+  border-color: #444;
+  color: #aaa;
+}
+
+.status-recording {
+  border-color: #ff4444;
+  color: #ff4444;
+  animation: pulse-border 1s infinite;
+}
+
+.status-uploading,
+.status-transcribing,
+.status-extracting,
+.status-validating {
+  border-color: #ffaa00;
+  color: #ffaa00;
+}
+
+.status-completed {
+  border-color: #44ff44;
+  color: #44ff44;
+}
+
+.status-error {
+  border-color: #ff4444;
+  color: #ff4444;
+  background: #1a0000;
+}
+
+/* Recorder Section */
+.recorder-section {
+  text-align: center;
+  padding: 2rem;
+  border: 2px solid #333;
+  background: #111;
+}
+
+.record-button {
+  font-family: inherit;
+  font-size: 1.1rem;
+  font-weight: 600;
+  padding: 1rem 2rem;
+  border: 3px solid #fff;
+  background: transparent;
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.2s;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.record-button:hover {
+  background: #fff;
+  color: #000;
+}
+
+.record-button.recording {
+  border-color: #ff4444;
+  color: #ff4444;
+  animation: pulse-button 1.5s infinite;
+}
+
+.record-button.recording:hover {
+  background: #ff4444;
+  color: #000;
+}
+
+.recording-indicator {
+  margin-top: 1rem;
+  color: #ff4444;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.pulse {
+  width: 10px;
+  height: 10px;
+  background: #ff4444;
+  border-radius: 50%;
+  animation: pulse-dot 1s infinite;
+}
+
+/* Transcription & Data Sections */
+.transcription-section,
+.data-section {
+  border: 2px solid #333;
+  background: #111;
+  padding: 1.5rem;
+}
+
+h2 {
+  font-size: 1rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #fff;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #333;
+}
+
+.transcription-content {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: #ccc;
+  white-space: pre-wrap;
+}
+
+.transcription-placeholder,
+.data-placeholder {
+  color: #666;
+  font-style: italic;
+  font-size: 0.9rem;
+}
+
+.json-display {
+  background: #0a0a0a;
+  border: 1px solid #333;
+  padding: 1rem;
+  overflow-x: auto;
+}
+
+.json-display pre {
+  font-family: inherit;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  color: #88ccff;
+  margin: 0;
+}
+
+/* Footer */
+.app-footer {
+  margin-top: 3rem;
+  padding-top: 1.5rem;
+  border-top: 2px solid #333;
+  text-align: center;
+  color: #555;
+  font-size: 0.8rem;
+}
+
+/* Animations */
+@keyframes pulse-border {
+  0%, 100% { border-color: #ff4444; }
+  50% { border-color: #aa0000; }
+}
+
+@keyframes pulse-button {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.8); }
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .app {
+    padding: 1rem 0.5rem;
+  }
+  
+  h1 {
+    font-size: 2rem;
+  }
+  
+  .record-button {
+    width: 100%;
+    padding: 1rem;
+  }
 }
