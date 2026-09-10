@@ -10,7 +10,6 @@ function Recorder({ onStatusChange, onResult, onError }) {
   const timerRef = useRef(null)
 
   useEffect(() => {
-    // Check MediaRecorder support
     if (!window.MediaRecorder) {
       setIsSupported(false)
       onError('Tu navegador no soporta grabación de audio')
@@ -20,7 +19,6 @@ function Recorder({ onStatusChange, onResult, onError }) {
   const startRecording = useCallback(async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-      // Determine supported MIME type
       const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
         ? 'audio/webm;codecs=opus'
         : MediaRecorder.isTypeSupported('audio/webm')
@@ -43,7 +41,6 @@ function Recorder({ onStatusChange, onResult, onError }) {
       mediaRecorder.onstop = () => {
         const audioBlob = new Blob(audioChunksRef.current, { type: mimeType || 'audio/webm' })
         uploadAudio(audioBlob)
-        // Stop all tracks to release microphone
         stream.getTracks().forEach(track => track.stop())
       }
 
@@ -51,7 +48,6 @@ function Recorder({ onStatusChange, onResult, onError }) {
       setIsRecording(true)
       onStatusChange('recording')
 
-      // Set max recording timer
       timerRef.current = setTimeout(() => {
         if (mediaRecorder.state === 'recording') {
           mediaRecorder.stop()
@@ -75,16 +71,11 @@ function Recorder({ onStatusChange, onResult, onError }) {
     try {
       onStatusChange('uploading')
       const formData = new FormData()
-      formData.append('audio', audioBlob, 'recording.webm')
+      const ext = audioBlob.type.includes('ogg') ? 'ogg' : 'webm'
+      formData.append('audio', audioBlob, `recording.${ext}`)
 
-      // Start the fetch and simulate processing stages concurrently.
-      // The backend processes transcription → extraction → validation server-side
-      // in a single request, so we can't truly track each stage from the frontend.
-      // The simulated stages give the user visual feedback during the wait.
       const stages = [
-        { status: 'transcribing', delay: 1200 },
-        { status: 'extracting', delay: 1200 },
-        { status: 'validating', delay: 800 },
+        { status: 'processing', delay: 1500 },
       ]
 
       let cancelled = false
@@ -107,6 +98,16 @@ function Recorder({ onStatusChange, onResult, onError }) {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
+
+        if (response.status === 422 && errorData.operations) {
+          onError(
+            'Detecté varias operaciones en un solo audio. Por favor, grabá una por vez.',
+            'multi_operation',
+            { operations: errorData.operations }
+          )
+          return
+        }
+
         throw new Error(errorData.error || `Error del servidor: ${response.status}`)
       }
 
@@ -114,7 +115,11 @@ function Recorder({ onStatusChange, onResult, onError }) {
       onResult(result)
     } catch (err) {
       console.error('Upload error:', err)
-      onError(err.message)
+      if (err.name === 'TypeError' && err.message.includes('fetch')) {
+        onError('No se pudo conectar al servidor. ¿Querés intentar de nuevo?', 'network')
+      } else {
+        onError(err.message)
+      }
     }
   }, [onStatusChange, onResult, onError])
 

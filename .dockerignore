@@ -1,0 +1,9 @@
+node_modules
+client/node_modules
+client/dist
+server/.env
+server/uploads
+.git
+*.md
+fly.toml
+.env.example
