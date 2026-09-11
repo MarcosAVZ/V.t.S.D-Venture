@@ -5,6 +5,7 @@ app = 'vtsd-venture'
 primary_region = 'gru'  # São Paulo — más cerca de Argentina
 
 [build]
+  dockerfile = "Dockerfile"
 
 [http_service]
   internal_port = 8080
