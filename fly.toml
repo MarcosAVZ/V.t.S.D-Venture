@@ -1,11 +1,13 @@
-# fly.toml — V.t.S.D-Venture
-# Docs: https://fly.io/docs/reference/configuration/
+# fly.toml app configuration file generated for v-t-s-d-venture-rdw-5g on 2026-09-11T19:58:43Z
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
 
-app = 'vtsd-venture'
-primary_region = 'gru'  # São Paulo — más cerca de Argentina
+app = 'v-t-s-d-venture-rdw-5g'
+primary_region = 'ams'
 
 [build]
-  dockerfile = "Dockerfile"
+  dockerfile = 'Dockerfile'
 
 [http_service]
   internal_port = 8080
@@ -23,3 +25,4 @@ primary_region = 'gru'  # São Paulo — más cerca de Argentina
   memory = '512mb'
   cpu_kind = 'shared'
   cpus = 1
+  memory_mb = 256
