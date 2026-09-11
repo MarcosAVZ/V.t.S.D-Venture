@@ -56,7 +56,7 @@ if (isProduction) {
   if (fs.existsSync(publicDir)) {
     app.use(express.static(publicDir))
     // SPA fallback — serve index.html for all non-API routes
-    app.get('*', (req, res) => {
+    app.get('/{*splat}', (req, res) => {
       res.sendFile(path.join(publicDir, 'index.html'))
     })
     console.log('[server] Serving static client from:', publicDir)
