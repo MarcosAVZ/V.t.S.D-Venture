@@ -4,6 +4,7 @@ import Transcription from './components/Transcription'
 import StructuredData from './components/StructuredData'
 import ConfirmationScreen from './components/ConfirmationScreen'
 import QueryResult from './components/QueryResult'
+import PurchaseImport from './components/PurchaseImport'
 
 const STATUS_TEXT = {
   idle: 'Listo para grabar',
@@ -27,6 +28,8 @@ function App() {
   const [errorDetails, setErrorDetails] = useState(null)
   const [queryResult, setQueryResult] = useState(null)
   const [lastOperation, setLastOperation] = useState(null)
+  const [mode, setMode] = useState('voice')
+  const [purchaseBusy, setPurchaseBusy] = useState(false)
 
   const isError = status === 'error'
   const isLoading = ['uploading', 'processing', 'executing'].includes(status)
@@ -199,6 +202,24 @@ function App() {
         <p className="subtitle">Grabá tu voz y convertila en datos estructurados</p>
       </header>
 
+      {(mode === 'purchase' || status === 'idle' || isError) && (
+        <nav className="mode-tabs" role="tablist" aria-label="Modo de carga">
+          <button type="button" role="tab" aria-selected={mode === 'voice'} className={`mode-tab ${mode === 'voice' ? 'mode-tab-active' : ''}`} onClick={() => setMode('voice')} disabled={purchaseBusy}>
+            Voz
+          </button>
+          <button type="button" role="tab" aria-selected={mode === 'purchase'} className={`mode-tab ${mode === 'purchase' ? 'mode-tab-active' : ''}`} onClick={() => setMode('purchase')}>
+            Importar compra (PDF)
+          </button>
+        </nav>
+      )}
+
+      {mode === 'purchase' ? (
+        <main className="app-main">
+          <section className="purchase-section">
+            <PurchaseImport onBusyChange={setPurchaseBusy} />
+          </section>
+        </main>
+      ) : (
       <main className="app-main">
         <section className="status-section">
           <div className={`status-indicator status-${status}`}>
@@ -320,6 +341,7 @@ function App() {
           </section>
         )}
       </main>
+      )}
 
       <footer className="app-footer">
         <p>V.t.S.D — Voice to Structured Data</p>
