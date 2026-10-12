@@ -149,7 +149,13 @@ export async function extractOperationData(transcriptionText) {
     return normalizedData;
   } catch (error) {
     console.error('AI extraction error:', error.message);
-    throw new Error(`AI extraction failed: ${error.message}`);
+    // Domain errors (e.g. MULTIPLE_OPERATIONS) keep their code/payload intact
+    if (error.code === 'MULTIPLE_OPERATIONS') {
+      throw error;
+    }
+    const wrapped = new Error(`AI extraction failed: ${error.message}`, { cause: error });
+    wrapped.code = 'AI_EXTRACTION_FAILED';
+    throw wrapped;
   }
 }
 

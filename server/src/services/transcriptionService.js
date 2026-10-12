@@ -30,13 +30,15 @@ export async function transcribeAudio(filePath) {
       file: fs.createReadStream(filePath),
       model: 'whisper-large-v3-turbo',
     });
-    console.log(`[whisper] Success: "${transcription.text.substring(0, 80)}..."`);
+    console.log(`[whisper] Success: ${transcription.text.length} chars`);
     return transcription.text;
   } catch (error) {
     console.error('[whisper] Error:', error.status, error.message);
     if (error.error) {
       console.error('[whisper] Details:', JSON.stringify(error.error));
     }
-    throw new Error(`Transcription failed: ${error.status} ${error.message}`);
+    const wrapped = new Error(`Transcription failed: ${error.status} ${error.message}`, { cause: error });
+    wrapped.code = 'TRANSCRIPTION_FAILED';
+    throw wrapped;
   }
 }
