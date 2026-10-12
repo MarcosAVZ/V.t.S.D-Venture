@@ -28,7 +28,6 @@ router.get('/stock', async (req, res) => {
     console.error('[inventory] Stock query error:', error.message);
     res.status(500).json({
       error: 'Error al consultar stock',
-      details: error.message,
     });
   }
 });
@@ -50,7 +49,6 @@ router.get('/products', async (req, res) => {
     console.error('[inventory] Products list error:', error.message);
     res.status(500).json({
       error: 'Error al listar productos',
-      details: error.message,
     });
   }
 });

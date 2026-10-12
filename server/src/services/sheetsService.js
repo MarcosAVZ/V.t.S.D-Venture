@@ -8,7 +8,29 @@
  * - Ventas: id | fecha | productoId | cantidad | precioVenta
  */
 
+import { todayAR } from '../utils/dateAr.js';
+
 const SHEETS_TIMEOUT = 30_000; // 30 seconds
+
+/**
+ * Validates an Apps Script HTTP response (status + content-type) and parses its JSON body.
+ * @param {Response} response - fetch Response
+ * @returns {Promise<Object>} Parsed JSON
+ * @throws {Error} If status is not ok or the body is not JSON
+ */
+async function parseAppsScriptResponse(response) {
+  if (!response.ok) {
+    throw new Error(`Google Sheets error: status ${response.status}`);
+  }
+
+  const contentType = response.headers.get('content-type') || '';
+  if (!contentType.includes('application/json')) {
+    const text = await response.text().catch(() => '');
+    throw new Error(`Google Sheets devolvió ${contentType.split(';')[0] || 'no-JSON'} en vez de JSON. ¿El Web App está deployado correctamente? ${text.substring(0, 120)}`);
+  }
+
+  return response.json();
+}
 
 /**
  * Sends a request to Apps Script with timeout and error handling.
@@ -34,17 +56,7 @@ async function callAppsScript(payload) {
       signal: controller.signal,
     });
 
-    if (!response.ok) {
-      throw new Error(`Google Sheets error: status ${response.status}`);
-    }
-
-    const contentType = response.headers.get('content-type') || '';
-    if (!contentType.includes('application/json')) {
-      const text = await response.text().catch(() => '');
-      throw new Error(`Google Sheets devolvió ${contentType.split(';')[0] || 'no-JSON'} en vez de JSON. ¿El Web App está deployado correctamente? ${text.substring(0, 120)}`);
-    }
-
-    return await response.json();
+    return await parseAppsScriptResponse(response);
   } catch (error) {
     if (error.name === 'AbortError') {
       throw new Error('Google Sheets timeout');
@@ -80,11 +92,7 @@ async function callAppsScriptGet(action, params = {}) {
       signal: controller.signal,
     });
 
-    if (!response.ok) {
-      throw new Error(`Google Sheets error: status ${response.status}`);
-    }
-
-    return await response.json();
+    return await parseAppsScriptResponse(response);
   } catch (error) {
     if (error.name === 'AbortError') {
       throw new Error('Google Sheets timeout');
@@ -96,11 +104,29 @@ async function callAppsScriptGet(action, params = {}) {
 }
 
 /**
+ * Reads the current stock of a product. Throws-free: returns { ok, stock }.
+ * ok=false means the stock could not be verified (the caller MUST abort).
+ */
+async function getCurrentStock(productoId) {
+  const stockResult = await callAppsScriptGet('queryStock', { productoId });
+  const stock = Number(stockResult?.stock);
+  if (!stockResult?.success || stockResult.stock === null || stockResult.stock === undefined || !Number.isFinite(stock)) {
+    return { ok: false };
+  }
+  return { ok: true, stock };
+}
+
+const STOCK_UNVERIFIED = {
+  success: false,
+  error: 'No se pudo verificar el stock. Operación cancelada.',
+};
+
+/**
  * Finds a product by name (fuzzy match).
  * @param {string} nombre - Product name to search
  * @returns {Promise<Object>} { success, found, product? }
  */
-async function findProductByName(nombre) {
+export async function findProductByName(nombre) {
   return callAppsScriptGet('findProduct', { nombre });
 }
 
@@ -195,13 +221,16 @@ async function executeVenta(data) {
     const productoId = lookupResult.product.id;
 
     // Check available stock
-    const stockResult = await callAppsScriptGet('queryStock', { productoId });
+    const current = await getCurrentStock(productoId);
+    if (!current.ok) {
+      return { ...STOCK_UNVERIFIED };
+    }
 
-    if (stockResult.success && stockResult.stock < producto.cantidad) {
+    if (current.stock < producto.cantidad) {
       return {
         success: false,
         error: 'Stock insuficiente',
-        currentStock: stockResult.stock,
+        currentStock: current.stock,
         requested: producto.cantidad,
       };
     }
@@ -258,7 +287,7 @@ async function executeNuevoProducto(data) {
   if (data.stock_inicial > 0) {
     const movementResult = await callAppsScript({
       action: 'addMovement',
-      fecha: new Date().toISOString().split('T')[0],
+      fecha: data.fecha || todayAR(),
       productoId: productoId,
       tipo: 'COMPRA',
       cantidad: data.stock_inicial,
@@ -304,20 +333,25 @@ async function executeAjuste(data) {
   const productoId = lookupResult.product.id;
 
   // Check available stock
-  const stockResult = await callAppsScriptGet('queryStock', { productoId });
+  const current = await getCurrentStock(productoId);
+  if (!current.ok) {
+    return { ...STOCK_UNVERIFIED };
+  }
 
-  if (stockResult.success && stockResult.stock < data.cantidad) {
+  // cantidad > 0 raises stock, cantidad < 0 lowers it: the result must not go below 0
+  if (current.stock + data.cantidad < 0) {
     return {
       success: false,
       error: 'Stock insuficiente para ajuste',
-      currentStock: stockResult.stock,
+      currentStock: current.stock,
+      requested: data.cantidad,
     };
   }
 
   // Create AJUSTE movement
   const movementResult = await callAppsScript({
     action: 'adjustStock',
-    fecha: new Date().toISOString().split('T')[0],
+    fecha: todayAR(),
     productoId: productoId,
     cantidad: data.cantidad, // Can be negative
     motivo: data.motivo || '',
