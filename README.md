@@ -24,14 +24,27 @@ Copiá el archivo de ejemplo y completá tu API key:
 cp .env.example server/.env
 ```
 
-Editá `server/.env`:
+Editá `server/.env` (ver la tabla de variables de entorno más abajo):
 
 ```
 GROQ_API_KEY=gsk_tu-api-key-aqui
+GOOGLE_SHEETS_URL=https://script.google.com/macros/s/.../exec
 PORT=3000
 ```
 
 > ⚠️ Nunca commiteés tu `.env`. Está incluido en `.gitignore`.
+
+### Variables de entorno
+
+| Variable | Requerida | Descripción |
+|----------|-----------|-------------|
+| `GROQ_API_KEY` | Sí | API key de Groq (transcripción, extracción por voz y lectura de comprobantes). |
+| `GOOGLE_SHEETS_URL` | Sí | URL del web app de Apps Script que hace de base de datos (Google Sheets). |
+| `GROQ_VISION_MODEL` | No | Modelo de visión para importar comprobantes. Por defecto `qwen/qwen3.8-27b`. |
+| `GROQ_VISION_MAX_TOKENS` | No | Máximo de tokens de salida por página en la importación. Por defecto `900`. |
+| `HOST` | No | Interfaz donde escucha el servidor. Por defecto `127.0.0.1` (solo esta máquina). |
+| `PORT` | No | Puerto del servidor. Por defecto `3000`. |
+| `STATIC_DIR` | No | Carpeta del cliente compilado que sirve `npm start`. Por defecto `client/dist`. |
 
 ## Ejecutar
 
@@ -48,6 +61,15 @@ Esto levanta ambos servicios en paralelo:
 | Frontend (Vite) | http://localhost:5173 |
 | Backend (Express) | http://localhost:3000 |
 
+### Uso local "tipo producción"
+
+```bash
+npm start
+```
+
+Compila el cliente (`client/dist`) y levanta el servidor en modo producción sirviendo ese build en
+http://localhost:3000 (sin Vite). Funciona igual en Windows, macOS y Linux.
+
 ### Por separado
 
 ```bash
@@ -57,6 +79,13 @@ cd server && npm run dev
 # Terminal 2 — Cliente
 cd client && npm run dev
 ```
+
+## Seguridad
+
+- La app es **solo local**: el servidor escucha en `127.0.0.1` y rechaza `Host` y `Origin` que no sean locales.
+- La API **no tiene autenticación**. No la expongas a la red ni a internet: si seteás `HOST` a otra cosa que
+  loopback (por ejemplo `0.0.0.0`), el servidor lo avisa con un WARNING al arrancar.
+- No hay despliegue alojado (se eliminó Fly.io/Docker a propósito).
 
 ## API
 
